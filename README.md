@@ -4,6 +4,6 @@ Generative pre-trained transformer for generating Shakespeare scripts. Closely f
 
 To generate Shakespeare like scripts:
 
-$ python3 app.py
+`python3 app.py`
 
 Enter number of tokens to generate on prompt.
