@@ -192,7 +192,7 @@ class BigramLM(nn.Module):
 
     return logits, loss
 
-  def generate(self, idx, max_new_tokens):
+  def generate(self, idx, max_new_tokens, temperature=1.0):
 
     for _ in range(max_new_tokens):
       # crop idx so that positional embedding doesnt run out of scope
@@ -200,7 +200,7 @@ class BigramLM(nn.Module):
       # get predictions
       logits, loss = self(idx_cond)
       # pick the last time step
-      logits = logits[:,-1,:]
+      logits = logits[:,-1,:] / temperature
       # apply softmax to get probabilities
       probs = F.softmax(logits,dim=-1)
       # sample from the distribution (pick the best)
