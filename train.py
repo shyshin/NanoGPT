@@ -171,7 +171,7 @@ class BigramLM(nn.Module):
 
   def forward(self, idx, targets = None):
     B,T = idx.shape
-    idx = idx.cuda() if torch.cuda.is_available() else 'cpu'
+    idx = idx.cuda() if torch.cuda.is_available() else idx
     tok_emb = self.token_embedding_table(idx)
     pos_emb = self.position_embedding_table(torch.arange(T,device = device))
     x = tok_emb + pos_emb
@@ -184,9 +184,10 @@ class BigramLM(nn.Module):
     else:
       B,T,C = logits.shape
       logits = logits.view(B*T, C)
-      logits = logits.cuda() if torch.cuda.is_available() else 'cpu'
+      logits = logits.cuda() if torch.cuda.is_available() else logits
       targets = targets.view(B*T)
-      targets = targets.cuda() if torch.cuda.is_available() else 'cpu'
+      
+      targets = targets.cuda() if torch.cuda.is_available() else targets
       loss = F.cross_entropy(logits, targets)
 
     return logits, loss
@@ -204,26 +205,33 @@ class BigramLM(nn.Module):
       probs = F.softmax(logits,dim=-1)
       # sample from the distribution (pick the best)
       idx_next = torch.multinomial(probs, num_samples=1)
+      # GPT like output
+      print(decode(idx_next[0].tolist()), end='')
       # append sampled index to running sequence
       idx = torch.cat((idx, idx_next), dim=1)
+      
     return idx
 
-model = BigramLM()
-m = model.to(device)
-# create a PyTorch optimizer
-optimizer = torch.optim.AdamW(model.parameters(),lr=1e-3)
+def train():
 
-for iter in range(max_iters):
+  model = BigramLM()
+  m = model.to(device)
+  # create a PyTorch optimizer
+  optimizer = torch.optim.AdamW(model.parameters(),lr=1e-3)
 
-  if iter % eval_interval == 0:
-    losses = estimate_loss(model)
-    print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+  for iter in range(max_iters):
 
-  xb, yb = get_batch('train')
-  logits, loss = model(xb,yb)
-  optimizer.zero_grad(set_to_none=True)
-  loss.backward()
-  optimizer.step()
+    if iter % eval_interval == 0:
+      losses = estimate_loss(model)
+      print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
 
+    xb, yb = get_batch('train')
+    logits, loss = model(xb,yb)
+    optimizer.zero_grad(set_to_none=True)
+    loss.backward()
+    optimizer.step()
+    torch.save(model, 'saved_model.pth')
 
-torch.save(model, 'saved_model.pth')
+if __name__ == "__main__":
+  train()
+
