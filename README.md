@@ -7,12 +7,14 @@ To generate Shakespeare like scripts:
 `python3 app.py`
 
 Enter number of tokens to generate on prompt.
+
+Try out the demo on HuggingFace space: https://huggingface.co/spaces/ironserengety/ShakespeareGPT
+
+
 Example:
 
 
-Input:
 
-`Num of tokens to generate? 1000`
 
 Output:
 ```HENRY BOLINGBROKE:
